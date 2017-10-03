@@ -9,15 +9,14 @@ namespace ImageAnalysisApp
     public class ComputerVisionHandler
     {
         protected const string Region = "westeurope";
-        protected const string ApiKey = "";
         protected const string BaseCognitiveServicesVisionUrlV1 = ".api.cognitive.microsoft.com/vision/v1.0/";
         protected string ApiEndPoint;
         private readonly HttpClient _httpClient;
 
-        public ComputerVisionHandler()
+        public ComputerVisionHandler(string apiKey)
         {
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", $"{ ApiKey }");
+            _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", $"{ apiKey }");
 
             var queryString = HttpUtility.ParseQueryString(string.Empty);
             queryString["visualFeatures"] = "Description, Tags, Color, Faces";
