@@ -4,8 +4,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage;
 using Newtonsoft.Json;
+using ImageAnalysisApp.CognitiveServices;
 
-namespace ImageAnalysisApp
+namespace ImageAnalysisApp.Functions
 {
     public static class ImageAnalyzer
     {
