@@ -11,12 +11,13 @@ namespace ImageAnalysisApp.Functions
     public static class ImageAnalyzer
     {
         [FunctionName("ImageAnalyzer")]
+        [return: Queue("analysisresultstostore")]
         public static void Run(
             [QueueTrigger("imagestoprocess", Connection = "https://imageanalysisappstorage.queue.core.windows.net/")]string blobName, 
-            [Queue("analysisresultstostore", Connection = "https://imageanalysisappstorage.queue.core.windows.net/")]ICollector<string> outputQueueItem, 
+            ICollector<string> outputQueueItem, 
             TraceWriter log)
         {
-
+            log.Info("Started ImageAnalyzer function.");
             var computerVisionApiKey = CloudConfigurationManager.GetSetting("ComputerVisionApiKey");
             var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
             var blobClient = storageAccount.CreateCloudBlobClient();
@@ -35,7 +36,7 @@ namespace ImageAnalysisApp.Functions
             }
             else
             {
-                log.Info($"Can't find blob '{blobName}' in {imagesBlobContainer.Name}.");
+                log.Warning($"Can't find blob '{blobName}' in {imagesBlobContainer.Name}.");
             }
 
             log.Info($"ImageAnalyzer completed for {blobName}.");
