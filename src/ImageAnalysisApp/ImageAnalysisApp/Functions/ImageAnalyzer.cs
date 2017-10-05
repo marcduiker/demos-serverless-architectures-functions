@@ -12,7 +12,7 @@ namespace ImageAnalysisApp.Functions
     public static class ImageAnalyzer
     {
         [FunctionName("ImageAnalyzer")]
-        [return: Queue("analysisresultstostore")]
+        [return: Queue("analysisresultstostore", Connection = "StorageConnectionString")]
         public static string Run(
             [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobName, 
             TraceWriter log)
