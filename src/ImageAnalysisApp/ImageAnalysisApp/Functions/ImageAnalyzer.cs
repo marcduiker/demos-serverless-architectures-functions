@@ -30,9 +30,11 @@ namespace ImageAnalysisApp.Functions
                 using (var stream = blob.OpenRead())
                 {
                     byte[] image = ReadStream(stream);
+                    log.Info($"Starting computer vision analysis for {blobName}....");
                     var computerVision = new ComputerVisionHandler(computerVisionApiKey);
                     var analysisResult = computerVision.AnalyzeImage(image).Result;
                     result = analysisResult.ToString(Formatting.Indented);
+                    log.Info($"Completed computer vision analysis for {blobName}.");
                 }
             }
             else
