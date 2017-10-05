@@ -13,7 +13,7 @@ namespace ImageAnalysisApp.Functions
         [FunctionName("ImageAnalyzer")]
         [return: Queue("analysisresultstostore")]
         public static void Run(
-            [QueueTrigger("imagestoprocess", Connection = "https://imageanalysisappstorage.queue.core.windows.net/")]string blobName, 
+            [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobName, 
             ICollector<string> outputQueueItem, 
             TraceWriter log)
         {

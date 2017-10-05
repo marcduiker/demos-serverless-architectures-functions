@@ -8,7 +8,7 @@ namespace ImageAnalysisApp.Functions
     {
         [FunctionName("AnalyzeBlob")]
         public static void Run(
-            [BlobTrigger("images/{blobname}", Connection = "DefaultEndpointsProtocol=https;AccountName=imageanalysisappstorage;AccountKey=uhkAlqrbnZEQuNM6aKDULzDgkEV3NPMTO6bYA6tyemDxW5mlTPJNHch+tzpa4qW7dMcVVoUkI4I092lD1/1SFg==;EndpointSuffix=core.windows.net")]Stream myBlob,
+            [BlobTrigger("images/{blobname}", Connection = "StorageConnectionString")]Stream myBlob,
             string blobname, 
             TraceWriter log)
         {
