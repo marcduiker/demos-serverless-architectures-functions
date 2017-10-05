@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Microsoft.Azure;
 using Microsoft.Azure.WebJobs;
@@ -12,11 +13,11 @@ namespace ImageAnalysisApp.Functions
     {
         [FunctionName("ImageAnalyzer")]
         [return: Queue("analysisresultstostore")]
-        public static void Run(
+        public static string Run(
             [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobName, 
-            ICollector<string> outputQueueItem, 
             TraceWriter log)
         {
+            string result = string.Empty;
             log.Info("Started ImageAnalyzer function.");
             var computerVisionApiKey = CloudConfigurationManager.GetSetting("ComputerVisionApiKey");
             var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
@@ -31,15 +32,16 @@ namespace ImageAnalysisApp.Functions
                     byte[] image = ReadStream(stream);
                     var computerVision = new ComputerVisionHandler(computerVisionApiKey);
                     var analysisResult = computerVision.AnalyzeImage(image).Result;
-                    outputQueueItem.Add(analysisResult.ToString(Formatting.Indented));
+                    result = analysisResult.ToString(Formatting.Indented);
                 }
             }
             else
             {
                 log.Warning($"Can't find blob '{blobName}' in {imagesBlobContainer.Name}.");
             }
-
+            
             log.Info($"ImageAnalyzer completed for {blobName}.");
+            return result;
         }
 
         private static byte[] ReadStream(Stream input)
