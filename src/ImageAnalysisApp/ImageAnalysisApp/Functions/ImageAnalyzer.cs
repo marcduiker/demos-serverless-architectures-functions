@@ -16,11 +16,12 @@ namespace ImageAnalysisApp.Functions
         [FunctionName("ImageAnalyzer")]
         [return: Queue("analysisresultstostore", Connection = "StorageConnectionString")]
         public static string Run(
-            [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobName, 
+            [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobNameInQueue, 
             [Blob("images/{blobName}", FileAccess.Read, Connection = "StorageConnectionString")]Stream blob,
+            string blobName,
             TraceWriter log)
         {
-            var result = new JObject {{"file", blobName}};
+            var result = new JObject {{"file", blobNameInQueue}};
 
             log.Info("Started ImageAnalyzer function.");
             var computerVisionApiKey = CloudConfigurationManager.GetSetting("ComputerVisionApiKey");
@@ -28,14 +29,14 @@ namespace ImageAnalysisApp.Functions
             using (blob)
             {
                 byte[] image = ReadStream(blob);
-                log.Info($"Starting computer vision analysis for {blobName}....");
+                log.Info($"Starting computer vision analysis for {blobNameInQueue}....");
                 var computerVision = new ComputerVisionHandler(computerVisionApiKey);
                 var analysisResult = computerVision.AnalyzeImage(image).Result;
                 result.Add("computer vision", analysisResult);
-                log.Info($"Completed computer vision analysis for {blobName}.");
+                log.Info($"Completed computer vision analysis for {blobNameInQueue}.");
             }
 
-            log.Info($"ImageAnalyzer completed for {blobName}.");
+            log.Info($"ImageAnalyzer completed for {blobNameInQueue}.");
 
             return result.ToString(Formatting.Indented);
         }
