@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
+using System.Threading;
 
 namespace ImageUploader
 {
@@ -7,21 +9,28 @@ namespace ImageUploader
     {
         static void Main(string[] args)
         {
-            string filePath;
+            string folder;
             if (args.Length == 0)
             {
-                filePath = @"C:\temp\testimage.png";
+                folder = ConfigurationManager.AppSettings.Get("LocalFolder");
             }
             else
             {
-                filePath = args[0];
+                folder = args[0];
             }
 
-            var fileInfo = new FileInfo(filePath);
+            var directoryInfo = new DirectoryInfo(folder);
             var fileUploader = new FileUploader();
-            Console.WriteLine($"Start uploading {fileInfo.Name} to Azure...");
-            fileUploader.Upload(fileInfo);
-            Console.WriteLine($"Completed uploading {fileInfo.Name} to Azure.");
+
+            foreach (var fileInfo in directoryInfo.GetFiles("*.jpg"))
+            {
+                Console.WriteLine($"Start uploading {fileInfo.Name} to Azure...");
+                fileUploader.Upload(fileInfo);
+                Thread.Sleep(2000);
+                Console.WriteLine($"Completed uploading {fileInfo.Name} to Azure.");
+            }
+
+            Console.WriteLine($"Completed uploading.");
         }
     }
 }
