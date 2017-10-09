@@ -17,7 +17,7 @@ namespace ImageAnalysisApp.Functions
         [return: Queue("analysisresultstostore", Connection = "StorageConnectionString")]
         public static string Run(
             [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobName, 
-            [Blob("images/{blobName}", FileAccess.ReadWrite, Connection = "StorageConnectionString")]CloudBlockBlob blob,
+            [Blob("images/{blobName}", Connection = "StorageConnectionString")]Stream blob,
             TraceWriter log)
         {
             var result = new JObject {{"file", blobName}};
@@ -25,23 +25,16 @@ namespace ImageAnalysisApp.Functions
             log.Info("Started ImageAnalyzer function.");
             var computerVisionApiKey = CloudConfigurationManager.GetSetting("ComputerVisionApiKey");
 
-            if (blob.Exists())
+            using (blob)
             {
-                using (var stream = blob.OpenRead())
-                {
-                    byte[] image = ReadStream(stream);
-                    log.Info($"Starting computer vision analysis for {blobName}....");
-                    var computerVision = new ComputerVisionHandler(computerVisionApiKey);
-                    var analysisResult = computerVision.AnalyzeImage(image).Result;
-                    result.Add("computer vision", analysisResult);
-                    log.Info($"Completed computer vision analysis for {blobName}.");
-                }
+                byte[] image = ReadStream(blob);
+                log.Info($"Starting computer vision analysis for {blobName}....");
+                var computerVision = new ComputerVisionHandler(computerVisionApiKey);
+                var analysisResult = computerVision.AnalyzeImage(image).Result;
+                result.Add("computer vision", analysisResult);
+                log.Info($"Completed computer vision analysis for {blobName}.");
             }
-            else
-            {
-                log.Warning($"Can't find blob '{blobName}' in {blob.Container.Name}.");
-            }
-            
+
             log.Info($"ImageAnalyzer completed for {blobName}.");
 
             return result.ToString(Formatting.Indented);
