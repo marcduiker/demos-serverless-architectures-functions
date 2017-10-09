@@ -12,12 +12,12 @@ namespace ImageAnalysisApp.Functions
         [FunctionName("AnalyzeBlobSize")]
         public static void Run(
             [QueueTrigger("imagesinput", Connection = "StorageConnectionString")]string blobNameInQueue,
-            [Blob("images/{queueTrigger}", FileAccess.ReadWrite, Connection = "StorageConnectionString")]CloudBlockBlob blob,
+            [Blob("images/{queueTrigger}", FileAccess.Read, Connection = "StorageConnectionString")]Stream blob,
             [Queue("imagestoolarge", Connection = "StorageConnectionString")]ICollector<string> imagesTooLarge,
             [Queue("imagestoprocess", Connection = "StorageConnectionString")]ICollector<string> imagesToProcess,
             TraceWriter log)
         {
-            if (blob.Properties.Length < MaxBlobSize)
+            if (blob.Length < MaxBlobSize)
             {
                 imagesToProcess.Add(blobNameInQueue);
             }
