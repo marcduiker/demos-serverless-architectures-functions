@@ -17,7 +17,7 @@ namespace ImageAnalysisApp.Functions
         [return: Queue("analysisresultstostore", Connection = "StorageConnectionString")]
         public static string Run(
             [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobName, 
-            [Blob("images/{blobName}", Connection = "StorageConnectionString")]Stream blob,
+            [Blob("images/{blobName}", FileAccess.Read, Connection = "StorageConnectionString")]Stream blob,
             TraceWriter log)
         {
             var result = new JObject {{"file", blobName}};
