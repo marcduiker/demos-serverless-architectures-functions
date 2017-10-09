@@ -30,7 +30,8 @@ namespace ImageUploader
                 Console.WriteLine($"Completed uploading {fileInfo.Name} to Azure.");
             }
 
-            Console.WriteLine($"Completed uploading.");
+            Console.WriteLine("Completed uploading.");
+            Console.ReadLine();
         }
     }
 }
