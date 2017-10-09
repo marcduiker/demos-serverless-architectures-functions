@@ -6,6 +6,8 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage;
 using Newtonsoft.Json;
 using ImageAnalysisApp.CognitiveServices;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Newtonsoft.Json.Linq;
 
 namespace ImageAnalysisApp.Functions
 {
@@ -15,16 +17,14 @@ namespace ImageAnalysisApp.Functions
         [return: Queue("analysisresultstostore", Connection = "StorageConnectionString")]
         public static string Run(
             [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobName, 
+            [Blob("images/{blobname}", Connection = "StorageConnectionString")]CloudBlockBlob blob,
             TraceWriter log)
         {
-            string result = string.Empty;
+            var result = new JObject {{"file", blobName}};
+
             log.Info("Started ImageAnalyzer function.");
             var computerVisionApiKey = CloudConfigurationManager.GetSetting("ComputerVisionApiKey");
-            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            var imagesBlobContainer = blobClient.GetContainerReference(CloudConfigurationManager.GetSetting("BlobStorageContainer"));
 
-            var blob = imagesBlobContainer.GetBlockBlobReference(blobName);
             if (blob.Exists())
             {
                 using (var stream = blob.OpenRead())
@@ -33,17 +33,18 @@ namespace ImageAnalysisApp.Functions
                     log.Info($"Starting computer vision analysis for {blobName}....");
                     var computerVision = new ComputerVisionHandler(computerVisionApiKey);
                     var analysisResult = computerVision.AnalyzeImage(image).Result;
-                    result = analysisResult.ToString(Formatting.Indented);
+                    result.Add("computer vision", analysisResult);
                     log.Info($"Completed computer vision analysis for {blobName}.");
                 }
             }
             else
             {
-                log.Warning($"Can't find blob '{blobName}' in {imagesBlobContainer.Name}.");
+                log.Warning($"Can't find blob '{blobName}' in {blob.Container.Name}.");
             }
             
             log.Info($"ImageAnalyzer completed for {blobName}.");
-            return result;
+
+            return result.ToString(Formatting.Indented);
         }
 
         private static byte[] ReadStream(Stream input)
