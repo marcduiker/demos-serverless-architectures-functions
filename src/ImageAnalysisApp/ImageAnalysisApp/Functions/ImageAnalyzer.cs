@@ -1,12 +1,9 @@
-using System;
 using System.IO;
 using Microsoft.Azure;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
-using Microsoft.WindowsAzure.Storage;
 using Newtonsoft.Json;
 using ImageAnalysisApp.CognitiveServices;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json.Linq;
 
 namespace ImageAnalysisApp.Functions
@@ -27,8 +24,8 @@ namespace ImageAnalysisApp.Functions
 
             using (blob)
             {
+                log.Info($"Starting computer vision analysis for {blobNameInQueue}...");
                 byte[] image = ReadStream(blob);
-                log.Info($"Starting computer vision analysis for {blobNameInQueue}....");
                 var computerVision = new ComputerVisionHandler(computerVisionApiKey);
                 var analysisResult = computerVision.AnalyzeImage(image).Result;
                 result.Add("computer vision", analysisResult);
