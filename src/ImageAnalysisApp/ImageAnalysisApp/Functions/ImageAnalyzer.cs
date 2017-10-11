@@ -10,11 +10,13 @@ namespace ImageAnalysisApp.Functions
 {
     public static class ImageAnalyzer
     {
+        private const string StorageConnectionString = "StorageConnectionString";
+
         [FunctionName("ImageAnalyzer")]
-        [return: Queue("analysisresultstostore", Connection = "StorageConnectionString")]
+        [return: Queue("analysisresultstostore", Connection = StorageConnectionString)]
         public static string Run(
-            [QueueTrigger("imagestoprocess", Connection = "StorageConnectionString")]string blobNameInQueue, 
-            [Blob("images/{queueTrigger}", FileAccess.Read, Connection = "StorageConnectionString")]Stream blob,
+            [QueueTrigger("imagestoanalyze", Connection = StorageConnectionString)]string blobNameInQueue, 
+            [Blob("images/{queueTrigger}", FileAccess.Read, Connection = StorageConnectionString)]Stream blob,
             TraceWriter log)
         {
             var result = new JObject {{"file", blobNameInQueue}};
@@ -28,6 +30,7 @@ namespace ImageAnalysisApp.Functions
                 byte[] image = ReadStream(blob);
                 var computerVision = new ComputerVisionHandler(computerVisionApiKey);
                 var analysisResult = computerVision.AnalyzeImage(image).Result;
+
                 result.Add("computer vision", analysisResult);
                 log.Info($"Completed computer vision analysis for {blobNameInQueue}.");
             }
