@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Logging;
 
 namespace ImageAnalysisApp.Functions
 {
@@ -15,7 +16,7 @@ namespace ImageAnalysisApp.Functions
             [Blob("images/{queueTrigger}", FileAccess.Read, Connection = StorageConnectionString)]Stream blob,
             [Queue("imagestoolarge", Connection = StorageConnectionString)]ICollector<string> imagesTooLarge,
             [Queue("imagestoanalyze", Connection = StorageConnectionString)]ICollector<string> imagesToProcess,
-            TraceWriter log)
+            ILogger log)
         {
             if (blob.Length < MaxBlobSize)
             {
@@ -23,7 +24,7 @@ namespace ImageAnalysisApp.Functions
             }
             else
             {
-                log.Warning($"Image { blobNameInQueue } is too large and will be placed in the 'imagestoolarge' queue.");
+                log.Log(LogLevel.Warning, 0,  $"Image { blobNameInQueue } is too large and will be placed in the 'imagestoolarge' queue.", null, null);
                 imagesTooLarge.Add(blobNameInQueue);
             }
         }

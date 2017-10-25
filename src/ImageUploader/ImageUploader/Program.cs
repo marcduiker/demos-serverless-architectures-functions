@@ -31,7 +31,11 @@ namespace ImageUploader
             }
 
             Console.WriteLine("Completed uploading.");
-            Console.ReadLine();
+            var key = Console.ReadKey();
+            if (key.Key == ConsoleKey.R)
+            {
+                Main(new string[]{});
+            }
         }
     }
 }
