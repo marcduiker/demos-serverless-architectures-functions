@@ -10,11 +10,11 @@ namespace ImageAnalysisApp.UnitTests.Functions
     public class ValidateBlobSizeTests
     {
         [Fact]
-        public void UnitOfWork_StateUnderTest_ExpectedBehaviour()
+        public void GivenABlobIsSmallerThan4MB_WhenRunIsCalled_AMessageIsPushedToTheImagesToProcessQueue()
         {
             // Arrange
-            string blobName = "test";
-            Stream blobStream = null;
+            const string blobName = "test";
+            Stream blobStream = GetMemoryStream(size: 0);
             Mock<ICollector<string>> imagesTooLargeQueue = GetMockedQueue();
             Mock<ICollector<string>> imagesToProcessQueue = GetMockedQueue();
             Mock<ILogger> logger = GetMockedLogger();
@@ -28,21 +28,54 @@ namespace ImageAnalysisApp.UnitTests.Functions
                 logger.Object);
 
             // Assert
+            imagesToProcessQueue.Verify(
+                queue => queue.Add(It.IsAny<string>()),
+                Times.Once);
 
         }
 
-        private Mock<ICollector<string>> GetMockedQueue()
+        [Fact]
+        public void GivenABlobIsLargerThan4MB_WhenRunIsCalled_AMessageIsPushedToTheImagesTooLargeQueue()
+        {
+            // Arrange
+            const string blobName = "test";
+            Stream blobStream = GetMemoryStream(size: 4194304);
+            Mock<ICollector<string>> imagesTooLargeQueue = GetMockedQueue();
+            Mock<ICollector<string>> imagesToProcessQueue = GetMockedQueue();
+            Mock<ILogger> logger = GetMockedLogger();
+
+            // Act
+            ValidateBlobSize.Run(
+                blobName,
+                blobStream,
+                imagesTooLargeQueue.Object,
+                imagesToProcessQueue.Object,
+                logger.Object);
+
+            // Assert
+            imagesTooLargeQueue.Verify(
+                queue => queue.Add(It.IsAny<string>()),
+                Times.Once);
+
+        }
+
+        private static Mock<ICollector<string>> GetMockedQueue()
         {
             var mockQueue = new Mock<ICollector<string>>();
 
             return mockQueue;
         }
 
-        private Mock<ILogger> GetMockedLogger()
+        private static Mock<ILogger> GetMockedLogger()
         {
             var mockLogger = new Mock<ILogger>();
 
             return mockLogger;
+        }
+
+        private static MemoryStream GetMemoryStream(int size)
+        {
+            return new MemoryStream(new byte[size]);
         }
     }
 }
